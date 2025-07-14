@@ -19,6 +19,20 @@ const userSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
+  phoneNumber: {
+    type: String,
+    trim: true
+  },
+  walletId: {
+    type: String,
+    unique: true,
+    sparse: true
+  },
+  balance: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
   role: {
     type: String,
     enum: ['lender', 'borrower'],

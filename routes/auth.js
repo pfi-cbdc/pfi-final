@@ -40,6 +40,9 @@ router.post('/register', [
         email: user.email,
         name: user.name,
         role: user.role,
+        phoneNumber: user.phoneNumber,
+        walletId: user.walletId,
+        balance: user.balance,
         borrowerProfile: user.borrowerProfile
       }
     });
@@ -80,6 +83,9 @@ router.post('/login', [
         email: user.email,
         name: user.name,
         role: user.role,
+        phoneNumber: user.phoneNumber,
+        walletId: user.walletId,
+        balance: user.balance,
         borrowerProfile: user.borrowerProfile
       }
     });
@@ -99,6 +105,9 @@ router.get('/me', authMiddleware, (req, res) => {
       email: req.user.email,
       name: req.user.name,
       role: req.user.role,
+      phoneNumber: req.user.phoneNumber,
+      walletId: req.user.walletId,
+      balance: req.user.balance,
       borrowerProfile: req.user.borrowerProfile
     }
   });
@@ -128,6 +137,9 @@ router.put('/role', [
         email: user.email,
         name: user.name,
         role: user.role,
+        phoneNumber: user.phoneNumber,
+        walletId: user.walletId,
+        balance: user.balance,
         borrowerProfile: user.borrowerProfile
       }
     });
@@ -136,8 +148,51 @@ router.put('/role', [
   }
 });
 
+router.put('/profile', [
+  authMiddleware,
+  body('phoneNumber').optional().isMobilePhone(),
+  body('walletId').optional().isString().trim()
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { phoneNumber, walletId } = req.body;
+    
+    const updateData = {};
+    if (phoneNumber !== undefined) updateData.phoneNumber = phoneNumber;
+    if (walletId !== undefined) updateData.walletId = walletId;
+    
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      updateData,
+      { new: true }
+    ).select('-password');
+
+    res.json({
+      user: {
+        id: user._id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        phoneNumber: user.phoneNumber,
+        walletId: user.walletId,
+        balance: user.balance,
+        borrowerProfile: user.borrowerProfile
+      }
+    });
+  } catch (error) {
+    console.error('Profile update error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 router.put('/borrower-profile', [
   authMiddleware,
+  body('phoneNumber').optional().isMobilePhone(),
+  body('walletId').optional().isString().trim(),
   body('creditScore').optional().isInt({ min: 600, max: 900 }),
   body('appScore').optional().isInt({ min: 700, max: 900 }),
   body('loanTenure').optional().isIn(['1M', '3M', '6M', '9M']),
@@ -158,11 +213,18 @@ router.put('/borrower-profile', [
       return res.status(403).json({ message: 'Only borrowers can update borrower profile' });
     }
 
-    const borrowerProfileData = req.body;
+    const { phoneNumber, walletId, ...borrowerProfileData } = req.body;
+    
+    const updateData = {};
+    if (phoneNumber !== undefined) updateData.phoneNumber = phoneNumber;
+    if (walletId !== undefined) updateData.walletId = walletId;
+    if (Object.keys(borrowerProfileData).length > 0) {
+      updateData.borrowerProfile = borrowerProfileData;
+    }
     
     const user = await User.findByIdAndUpdate(
       req.user._id,
-      { borrowerProfile: borrowerProfileData },
+      updateData,
       { new: true }
     ).select('-password');
 
@@ -172,6 +234,9 @@ router.put('/borrower-profile', [
         email: user.email,
         name: user.name,
         role: user.role,
+        phoneNumber: user.phoneNumber,
+        walletId: user.walletId,
+        balance: user.balance,
         borrowerProfile: user.borrowerProfile
       }
     });

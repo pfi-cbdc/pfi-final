@@ -6,7 +6,14 @@ const Profile = () => {
   const { user, updateUser } = useAuth();
   const [showRoleSelection, setShowRoleSelection] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [profileData, setProfileData] = useState({
+    phoneNumber: user?.phoneNumber || '',
+    walletId: user?.walletId || ''
+  });
   const [formData, setFormData] = useState({
+    phoneNumber: user?.phoneNumber || '',
+    walletId: user?.walletId || '',
     creditScore: user?.borrowerProfile?.creditScore || '',
     appScore: user?.borrowerProfile?.appScore || '',
     loanTenure: user?.borrowerProfile?.loanTenure || '',
@@ -34,10 +41,54 @@ const Profile = () => {
     }));
   };
 
+  const handleProfileInputChange = (e) => {
+    const { name, value } = e.target;
+    setProfileData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleProfileEditToggle = () => {
+    setIsEditingProfile(!isEditingProfile);
+    if (!isEditingProfile) {
+      setProfileData({
+        phoneNumber: user?.phoneNumber || '',
+        walletId: user?.walletId || ''
+      });
+    }
+  };
+
+  const handleProfileSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('/api/auth/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(profileData)
+      });
+
+      if (response.ok) {
+        const updatedUser = await response.json();
+        updateUser(updatedUser);
+        setIsEditingProfile(false);
+      } else {
+        console.error('Failed to update profile');
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error);
+    }
+  };
+
   const handleEditToggle = () => {
     setIsEditing(!isEditing);
     if (!isEditing) {
       setFormData({
+        phoneNumber: user?.phoneNumber || '',
+        walletId: user?.walletId || '',
         creditScore: user?.borrowerProfile?.creditScore || '',
         appScore: user?.borrowerProfile?.appScore || '',
         loanTenure: user?.borrowerProfile?.loanTenure || '',
@@ -124,10 +175,78 @@ const Profile = () => {
               </span>
             </div>
             
-            <div className="detail-row">
-              <label>Member Since:</label>
-              <span>{new Date().toLocaleDateString()}</span>
-            </div>
+            {isEditingProfile ? (
+              <form onSubmit={handleProfileSubmit} className="profile-edit-form">
+                <div className="detail-row">
+                  <label>Phone Number:</label>
+                  <input
+                    type="tel"
+                    name="phoneNumber"
+                    value={profileData.phoneNumber}
+                    onChange={handleProfileInputChange}
+                    placeholder="Enter phone number"
+                  />
+                </div>
+                
+                <div className="detail-row">
+                  <label>Wallet ID:</label>
+                  <input
+                    type="text"
+                    name="walletId"
+                    value={profileData.walletId}
+                    onChange={handleProfileInputChange}
+                    placeholder="Enter wallet ID"
+                  />
+                </div>
+                
+                <div className="detail-row">
+                  <label>Balance:</label>
+                  <span>₹{user?.balance?.toFixed(2) || '0.00'}</span>
+                </div>
+                
+                <div className="detail-row">
+                  <label>Member Since:</label>
+                  <span>{new Date().toLocaleDateString()}</span>
+                </div>
+                
+                <div className="profile-edit-actions">
+                  <button type="submit" className="primary-btn">
+                    Save Changes
+                  </button>
+                  <button type="button" onClick={handleProfileEditToggle} className="secondary-btn">
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <>
+                <div className="detail-row">
+                  <label>Phone Number:</label>
+                  <span>{user?.phoneNumber || 'Not provided'}</span>
+                </div>
+                
+                <div className="detail-row">
+                  <label>Wallet ID:</label>
+                  <span>{user?.walletId || 'Not assigned'}</span>
+                </div>
+                
+                <div className="detail-row">
+                  <label>Balance:</label>
+                  <span>₹{user?.balance?.toFixed(2) || '0.00'}</span>
+                </div>
+                
+                <div className="detail-row">
+                  <label>Member Since:</label>
+                  <span>{new Date().toLocaleDateString()}</span>
+                </div>
+                
+                <div className="profile-edit-actions">
+                  <button onClick={handleProfileEditToggle} className="edit-btn">
+                    Edit Profile
+                  </button>
+                </div>
+              </>
+            )}
           </div>
 
           {user?.role === 'borrower' && (
@@ -142,6 +261,28 @@ const Profile = () => {
               {isEditing ? (
                 <form onSubmit={handleSubmit} className="borrower-form">
                   <div className="form-grid">
+                    <div className="form-group">
+                      <label>Phone Number:</label>
+                      <input
+                        type="tel"
+                        name="phoneNumber"
+                        value={formData.phoneNumber}
+                        onChange={handleInputChange}
+                        placeholder="Enter phone number"
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label>Wallet ID:</label>
+                      <input
+                        type="text"
+                        name="walletId"
+                        value={formData.walletId}
+                        onChange={handleInputChange}
+                        placeholder="Enter wallet ID"
+                      />
+                    </div>
+
                     <div className="form-group">
                       <label>Credit Score (600-900):</label>
                       <input
@@ -285,6 +426,14 @@ const Profile = () => {
               ) : (
                 <div className="borrower-details">
                   <div className="detail-grid">
+                    <div className="detail-row">
+                      <label>Phone Number:</label>
+                      <span>{user?.phoneNumber || 'Not set'}</span>
+                    </div>
+                    <div className="detail-row">
+                      <label>Wallet ID:</label>
+                      <span>{user?.walletId || 'Not set'}</span>
+                    </div>
                     <div className="detail-row">
                       <label>Credit Score:</label>
                       <span>{user?.borrowerProfile?.creditScore || 'Not set'}</span>
