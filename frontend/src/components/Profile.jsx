@@ -105,7 +105,7 @@ const Profile = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('/api/auth/borrower-profile', {
+      const response = await fetch('/api/borrower/profile', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

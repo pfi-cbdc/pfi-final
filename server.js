@@ -4,6 +4,8 @@ const cors = require('cors');
 require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
+const borrowerRoutes = require('./routes/borrower');
+const lenderRoutes = require('./routes/lender');
 
 const app = express();
 
@@ -18,6 +20,8 @@ mongoose.connect(process.env.MONGODB_URI)
   .catch(err => console.log('MongoDB connection error:', err));
 
 app.use('/api/auth', authRoutes);
+app.use('/api/borrower', borrowerRoutes);
+app.use('/api/lender', lenderRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'Auth API Server Running' });
