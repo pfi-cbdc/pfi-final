@@ -23,6 +23,46 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ['lender', 'borrower'],
     required: false
+  },
+  borrowerProfile: {
+    creditScore: {
+      type: Number,
+      min: 600,
+      max: 900
+    },
+    appScore: {
+      type: Number,
+      min: 700,
+      max: 900
+    },
+    loanTenure: {
+      type: String,
+      enum: ['1M', '3M', '6M', '9M']
+    },
+    rateOfInterest: {
+      type: Number,
+      enum: [12, 24, 36, 48]
+    },
+    repaymentType: {
+      type: String,
+      enum: ['Daily', 'Weekly', 'Monthly']
+    },
+    riskCategory: {
+      type: String,
+      enum: ['Low', 'Medium', 'High']
+    },
+    borrowerType: {
+      type: String,
+      enum: ['Salaried', 'SelfEmployed']
+    },
+    monthlyIncome: {
+      type: String,
+      enum: ['Upto 25000', '25000-50000', '50000-100000', '100000-500000']
+    },
+    loanAmount: {
+      type: String,
+      enum: ['Upto 25000', '25000-50000', '50000-100000']
+    }
   }
 }, {
   timestamps: true
