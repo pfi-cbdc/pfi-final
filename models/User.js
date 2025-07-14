@@ -35,7 +35,7 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['lender', 'borrower'],
+    enum: ['lender', 'borrower', 'admin'],
     required: false
   },
   borrowerProfile: {

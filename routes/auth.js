@@ -22,7 +22,7 @@ router.get('/me', authMiddleware, authController.getMe);
 
 router.put('/role', [
   authMiddleware,
-  body('role').isIn(['lender', 'borrower'])
+  body('role').isIn(['lender', 'borrower', 'admin'])
 ], authController.updateRole);
 
 router.put('/profile', [

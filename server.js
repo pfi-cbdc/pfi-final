@@ -6,6 +6,7 @@ require('dotenv').config();
 const authRoutes = require('./routes/auth');
 const borrowerRoutes = require('./routes/borrower');
 const lenderRoutes = require('./routes/lender');
+const adminRoutes = require('./routes/admin');
 
 const app = express();
 
@@ -22,6 +23,7 @@ mongoose.connect(process.env.MONGODB_URI)
 app.use('/api/auth', authRoutes);
 app.use('/api/borrower', borrowerRoutes);
 app.use('/api/lender', lenderRoutes);
+app.use('/api/admin', adminRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'Auth API Server Running' });

@@ -6,9 +6,10 @@ import Login from './components/Login';
 import Register from './components/Register';
 import Dashboard from './components/Dashboard';
 import Profile from './components/Profile';
+import AdminDashboard from './components/AdminDashboard';
 
 const AuthWrapper = () => {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, user } = useAuth();
   const [showLogin, setShowLogin] = useState(true);
   const [showAuthModal, setShowAuthModal] = useState(false);
 
@@ -36,11 +37,33 @@ const AuthWrapper = () => {
       <Routes>
         <Route 
           path="/" 
-          element={isAuthenticated ? <Dashboard /> : <Navigate to="/auth" />} 
+          element={
+            isAuthenticated ? (
+              user?.role === 'admin' ? <AdminDashboard /> : <Dashboard />
+            ) : (
+              <Navigate to="/auth" />
+            )
+          } 
         />
         <Route 
           path="/profile" 
-          element={isAuthenticated ? <Profile /> : <Navigate to="/auth" />} 
+          element={
+            isAuthenticated ? (
+              user?.role === 'admin' ? <Navigate to="/" /> : <Profile />
+            ) : (
+              <Navigate to="/auth" />
+            )
+          } 
+        />
+        <Route 
+          path="/admin" 
+          element={
+            isAuthenticated && user?.role === 'admin' ? (
+              <AdminDashboard />
+            ) : (
+              <Navigate to="/" />
+            )
+          } 
         />
         <Route 
           path="/auth" 

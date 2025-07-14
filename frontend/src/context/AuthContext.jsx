@@ -70,9 +70,14 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const updateUser = (updatedUser) => {
+    setUser(updatedUser.user || updatedUser);
+  };
+
   const value = {
     user,
     setUser,
+    updateUser,
     token,
     login,
     register,
