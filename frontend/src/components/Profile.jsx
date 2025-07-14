@@ -3,8 +3,20 @@ import { useAuth } from '../context/AuthContext';
 import RoleSelection from './RoleSelection';
 
 const Profile = () => {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const [showRoleSelection, setShowRoleSelection] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({
+    creditScore: user?.borrowerProfile?.creditScore || '',
+    appScore: user?.borrowerProfile?.appScore || '',
+    loanTenure: user?.borrowerProfile?.loanTenure || '',
+    rateOfInterest: user?.borrowerProfile?.rateOfInterest || '',
+    repaymentType: user?.borrowerProfile?.repaymentType || '',
+    riskCategory: user?.borrowerProfile?.riskCategory || '',
+    borrowerType: user?.borrowerProfile?.borrowerType || '',
+    monthlyIncome: user?.borrowerProfile?.monthlyIncome || '',
+    loanAmount: user?.borrowerProfile?.loanAmount || ''
+  });
 
   const handleChangeRole = () => {
     setShowRoleSelection(true);
@@ -12,6 +24,55 @@ const Profile = () => {
 
   const handleRoleSelected = () => {
     setShowRoleSelection(false);
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleEditToggle = () => {
+    setIsEditing(!isEditing);
+    if (!isEditing) {
+      setFormData({
+        creditScore: user?.borrowerProfile?.creditScore || '',
+        appScore: user?.borrowerProfile?.appScore || '',
+        loanTenure: user?.borrowerProfile?.loanTenure || '',
+        rateOfInterest: user?.borrowerProfile?.rateOfInterest || '',
+        repaymentType: user?.borrowerProfile?.repaymentType || '',
+        riskCategory: user?.borrowerProfile?.riskCategory || '',
+        borrowerType: user?.borrowerProfile?.borrowerType || '',
+        monthlyIncome: user?.borrowerProfile?.monthlyIncome || '',
+        loanAmount: user?.borrowerProfile?.loanAmount || ''
+      });
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('/api/auth/borrower-profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(formData)
+      });
+
+      if (response.ok) {
+        const updatedUser = await response.json();
+        updateUser(updatedUser);
+        setIsEditing(false);
+      } else {
+        console.error('Failed to update profile');
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error);
+    }
   };
 
   if (showRoleSelection) {
@@ -68,6 +129,203 @@ const Profile = () => {
               <span>{new Date().toLocaleDateString()}</span>
             </div>
           </div>
+
+          {user?.role === 'borrower' && (
+            <div className="borrower-profile">
+              <div className="section-header">
+                <h3>Borrower Profile</h3>
+                <button onClick={handleEditToggle} className="edit-btn">
+                  {isEditing ? 'Cancel' : 'Edit Profile'}
+                </button>
+              </div>
+
+              {isEditing ? (
+                <form onSubmit={handleSubmit} className="borrower-form">
+                  <div className="form-grid">
+                    <div className="form-group">
+                      <label>Credit Score (600-900):</label>
+                      <input
+                        type="number"
+                        name="creditScore"
+                        value={formData.creditScore}
+                        onChange={handleInputChange}
+                        min="600"
+                        max="900"
+                        required
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label>App Score (700-900):</label>
+                      <input
+                        type="number"
+                        name="appScore"
+                        value={formData.appScore}
+                        onChange={handleInputChange}
+                        min="700"
+                        max="900"
+                        required
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label>Loan Tenure:</label>
+                      <select
+                        name="loanTenure"
+                        value={formData.loanTenure}
+                        onChange={handleInputChange}
+                        required
+                      >
+                        <option value="">Select Tenure</option>
+                        <option value="1M">1 Month</option>
+                        <option value="3M">3 Months</option>
+                        <option value="6M">6 Months</option>
+                        <option value="9M">9 Months</option>
+                      </select>
+                    </div>
+
+                    <div className="form-group">
+                      <label>Rate of Interest (%):</label>
+                      <select
+                        name="rateOfInterest"
+                        value={formData.rateOfInterest}
+                        onChange={handleInputChange}
+                        required
+                      >
+                        <option value="">Select Rate</option>
+                        <option value="12">12%</option>
+                        <option value="24">24%</option>
+                        <option value="36">36%</option>
+                        <option value="48">48%</option>
+                      </select>
+                    </div>
+
+                    <div className="form-group">
+                      <label>Repayment Type:</label>
+                      <select
+                        name="repaymentType"
+                        value={formData.repaymentType}
+                        onChange={handleInputChange}
+                        required
+                      >
+                        <option value="">Select Type</option>
+                        <option value="Daily">Daily</option>
+                        <option value="Weekly">Weekly</option>
+                        <option value="Monthly">Monthly</option>
+                      </select>
+                    </div>
+
+                    <div className="form-group">
+                      <label>Risk Category:</label>
+                      <select
+                        name="riskCategory"
+                        value={formData.riskCategory}
+                        onChange={handleInputChange}
+                        required
+                      >
+                        <option value="">Select Category</option>
+                        <option value="Low">Low</option>
+                        <option value="Medium">Medium</option>
+                        <option value="High">High</option>
+                      </select>
+                    </div>
+
+                    <div className="form-group">
+                      <label>Borrower Type:</label>
+                      <select
+                        name="borrowerType"
+                        value={formData.borrowerType}
+                        onChange={handleInputChange}
+                        required
+                      >
+                        <option value="">Select Type</option>
+                        <option value="Salaried">Salaried</option>
+                        <option value="SelfEmployed">Self Employed</option>
+                      </select>
+                    </div>
+
+                    <div className="form-group">
+                      <label>Monthly Income:</label>
+                      <select
+                        name="monthlyIncome"
+                        value={formData.monthlyIncome}
+                        onChange={handleInputChange}
+                        required
+                      >
+                        <option value="">Select Income Range</option>
+                        <option value="Upto 25000">Up to ₹25,000</option>
+                        <option value="25000-50000">₹25,000 - ₹50,000</option>
+                        <option value="50000-100000">₹50,000 - ₹1,00,000</option>
+                        <option value="100000-500000">₹1,00,000 - ₹5,00,000</option>
+                      </select>
+                    </div>
+
+                    <div className="form-group">
+                      <label>Loan Amount:</label>
+                      <select
+                        name="loanAmount"
+                        value={formData.loanAmount}
+                        onChange={handleInputChange}
+                        required
+                      >
+                        <option value="">Select Amount</option>
+                        <option value="Upto 25000">Up to ₹25,000</option>
+                        <option value="25000-50000">₹25,000 - ₹50,000</option>
+                        <option value="50000-100000">₹50,000 - ₹1,00,000</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="form-actions">
+                    <button type="submit" className="primary-btn">
+                      Save Profile
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <div className="borrower-details">
+                  <div className="detail-grid">
+                    <div className="detail-row">
+                      <label>Credit Score:</label>
+                      <span>{user?.borrowerProfile?.creditScore || 'Not set'}</span>
+                    </div>
+                    <div className="detail-row">
+                      <label>App Score:</label>
+                      <span>{user?.borrowerProfile?.appScore || 'Not set'}</span>
+                    </div>
+                    <div className="detail-row">
+                      <label>Loan Tenure:</label>
+                      <span>{user?.borrowerProfile?.loanTenure || 'Not set'}</span>
+                    </div>
+                    <div className="detail-row">
+                      <label>Rate of Interest:</label>
+                      <span>{user?.borrowerProfile?.rateOfInterest ? `${user.borrowerProfile.rateOfInterest}%` : 'Not set'}</span>
+                    </div>
+                    <div className="detail-row">
+                      <label>Repayment Type:</label>
+                      <span>{user?.borrowerProfile?.repaymentType || 'Not set'}</span>
+                    </div>
+                    <div className="detail-row">
+                      <label>Risk Category:</label>
+                      <span>{user?.borrowerProfile?.riskCategory || 'Not set'}</span>
+                    </div>
+                    <div className="detail-row">
+                      <label>Borrower Type:</label>
+                      <span>{user?.borrowerProfile?.borrowerType || 'Not set'}</span>
+                    </div>
+                    <div className="detail-row">
+                      <label>Monthly Income:</label>
+                      <span>{user?.borrowerProfile?.monthlyIncome || 'Not set'}</span>
+                    </div>
+                    <div className="detail-row">
+                      <label>Loan Amount:</label>
+                      <span>{user?.borrowerProfile?.loanAmount || 'Not set'}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
           
           <div className="profile-actions">
             {!user?.role ? (
