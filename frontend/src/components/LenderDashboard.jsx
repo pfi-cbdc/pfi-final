@@ -14,6 +14,11 @@ const LenderDashboard = () => {
   const [lendAmount, setLendAmount] = useState('');
   const [lendLoading, setLendLoading] = useState(false);
   const [lendMessage, setLendMessage] = useState('');
+  const [selectedBorrowers, setSelectedBorrowers] = useState([]);
+  const [bulkLendModal, setBulkLendModal] = useState(false);
+  const [bulkLendAmounts, setBulkLendAmounts] = useState({});
+  const [bulkLendLoading, setBulkLendLoading] = useState(false);
+  const [bulkLendMessage, setBulkLendMessage] = useState('');
 
   useEffect(() => {
     fetchBorrowers();
@@ -103,6 +108,117 @@ const LenderDashboard = () => {
     }
   };
 
+  const handleBorrowerSelection = (borrower) => {
+    setSelectedBorrowers(prev => {
+      const isSelected = prev.find(b => b._id === borrower._id);
+      if (isSelected) {
+        return prev.filter(b => b._id !== borrower._id);
+      } else {
+        return [...prev, borrower];
+      }
+    });
+  };
+
+  const openBulkLendModal = () => {
+    if (selectedBorrowers.length === 0) {
+      alert('Please select at least one borrower');
+      return;
+    }
+    setBulkLendModal(true);
+    setBulkLendMessage('');
+    // Initialize amounts for selected borrowers
+    const initialAmounts = {};
+    selectedBorrowers.forEach(borrower => {
+      initialAmounts[borrower._id] = '';
+    });
+    setBulkLendAmounts(initialAmounts);
+  };
+
+  const closeBulkLendModal = () => {
+    setBulkLendModal(false);
+    setBulkLendAmounts({});
+    setBulkLendMessage('');
+  };
+
+  const handleBulkAmountChange = (borrowerId, amount) => {
+    setBulkLendAmounts(prev => ({
+      ...prev,
+      [borrowerId]: amount
+    }));
+  };
+
+  const submitBulkLend = async (e) => {
+    e.preventDefault();
+    setBulkLendLoading(true);
+    setBulkLendMessage('');
+
+    try {
+      const transfers = [];
+      let totalAmount = 0;
+
+      // Validate all amounts
+      for (const borrower of selectedBorrowers) {
+        const amount = parseFloat(bulkLendAmounts[borrower._id]);
+        if (!amount || amount <= 0) {
+          setBulkLendMessage(`Please enter a valid amount for ${borrower.name}`);
+          setBulkLendLoading(false);
+          return;
+        }
+        totalAmount += amount;
+        transfers.push({
+          borrower: borrower,
+          amount: amount
+        });
+      }
+
+      // Check if lender has sufficient balance
+      if (user.balance < totalAmount) {
+        setBulkLendMessage(`Insufficient balance. Total needed: ₹${totalAmount}, Available: ₹${user.balance}`);
+        setBulkLendLoading(false);
+        return;
+      }
+
+      // Execute all transfers
+      let successCount = 0;
+      let newBalance = user.balance;
+
+      for (const transfer of transfers) {
+        try {
+          const response = await lenderAPI.transferMoney(
+            transfer.borrower.walletId,
+            transfer.amount
+          );
+          if (response.data.success) {
+            successCount++;
+            newBalance = response.data.data.from.newBalance;
+          }
+        } catch (error) {
+          console.error(`Transfer failed for ${transfer.borrower.name}:`, error);
+        }
+      }
+
+      // Update user balance
+      const updatedUser = {
+        ...user,
+        balance: newBalance
+      };
+      updateUser(updatedUser);
+
+      setBulkLendMessage(`Successfully lent money to ${successCount}/${transfers.length} borrowers. Total: ₹${totalAmount}`);
+      fetchBorrowers(); // Refresh borrowers list
+      setSelectedBorrowers([]); // Clear selection
+
+      setTimeout(() => {
+        closeBulkLendModal();
+      }, 3000);
+
+    } catch (error) {
+      setBulkLendMessage('Bulk transfer failed: ' + (error.response?.data?.message || error.message));
+    } finally {
+      setBulkLendLoading(false);
+    }
+  };
+
   return (
     <div className="lender-dashboard">
       <div className="lender-container">
@@ -114,6 +230,16 @@ const LenderDashboard = () => {
         <div className="borrowers-section">
           <div className="borrowers-header">
             <h3>Available Borrowers ({filteredBorrowers.length})</h3>
+            <div className="bulk-actions">
+              <span>{selectedBorrowers.length} selected</span>
+              <button 
+                className="bulk-lend-btn"
+                onClick={openBulkLendModal}
+                disabled={selectedBorrowers.length === 0}
+              >
+                Lend to Selected ({selectedBorrowers.length})
+              </button>
+            </div>
           </div>
 
           {loading ? (
@@ -128,6 +254,7 @@ const LenderDashboard = () => {
             <table className="borrowers-table">
               <thead>
                 <tr>
+                  <th>Select</th>
                   <th>Borrower</th>
                   <th>Wallet ID</th>
                   <th>Credit Score</th>
@@ -143,6 +270,13 @@ const LenderDashboard = () => {
               <tbody>
                 {filteredBorrowers.map(borrower => (
                   <tr key={borrower._id}>
+                    <td>
+                      <input
+                        type="checkbox"
+                        checked={selectedBorrowers.find(b => b._id === borrower._id) !== undefined}
+                        onChange={() => handleBorrowerSelection(borrower)}
+                      />
+                    </td>
                     <td>
                       <div className="borrower-name">{borrower.name}</div>
                       <div className="borrower-email">{borrower.email}</div>
@@ -257,6 +391,81 @@ const LenderDashboard = () => {
                 {lendMessage && (
                   <div className={`lend-message ${lendMessage.includes('Successfully') ? 'success' : 'error'}`}>
                     {lendMessage}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Bulk Lend Modal */}
+        {bulkLendModal && (
+          <div className="modal-overlay">
+            <div className="modal-content bulk-modal">
+              <div className="modal-header">
+                <h3>Lend to Multiple Borrowers</h3>
+                <button className="close-btn" onClick={closeBulkLendModal}>×</button>
+              </div>
+              
+              <div className="modal-body">
+                <div className="bulk-summary">
+                  <p><strong>Selected Borrowers:</strong> {selectedBorrowers.length}</p>
+                  <p><strong>Your Balance:</strong> {formatCurrency(user?.balance)}</p>
+                </div>
+                
+                <form onSubmit={submitBulkLend}>
+                  <div className="bulk-borrowers-list">
+                    {selectedBorrowers.map(borrower => (
+                      <div key={borrower._id} className="bulk-borrower-item">
+                        <div className="borrower-info">
+                          <h4>{borrower.name}</h4>
+                          <p>{borrower.email}</p>
+                          <p>Wallet: {borrower.walletId}</p>
+                          <p>Current Balance: {formatCurrency(borrower.balance)}</p>
+                        </div>
+                        <div className="amount-input">
+                          <label>Amount (₹):</label>
+                          <input
+                            type="number"
+                            value={bulkLendAmounts[borrower._id] || ''}
+                            onChange={(e) => handleBulkAmountChange(borrower._id, e.target.value)}
+                            placeholder="Enter amount"
+                            min="0.01"
+                            step="0.01"
+                            required
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  <div className="total-amount">
+                    <strong>
+                      Total Amount: ₹{Object.values(bulkLendAmounts).reduce((sum, amount) => sum + (parseFloat(amount) || 0), 0).toFixed(2)}
+                    </strong>
+                  </div>
+                  
+                  <div className="modal-actions">
+                    <button 
+                      type="submit" 
+                      className="bulk-submit-btn"
+                      disabled={bulkLendLoading}
+                    >
+                      {bulkLendLoading ? 'Processing...' : 'Lend to All Selected'}
+                    </button>
+                    <button 
+                      type="button" 
+                      className="cancel-btn"
+                      onClick={closeBulkLendModal}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+                
+                {bulkLendMessage && (
+                  <div className={`bulk-message ${bulkLendMessage.includes('Successfully') ? 'success' : 'error'}`}>
+                    {bulkLendMessage}
                   </div>
                 )}
               </div>
