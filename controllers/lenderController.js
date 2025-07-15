@@ -1,5 +1,6 @@
 const { validationResult } = require('express-validator');
 const User = require('../models/User');
+const Transaction = require('../models/Transaction');
 
 const lenderController = {
   getProfile: (req, res) => {
@@ -112,6 +113,10 @@ const lenderController = {
         return res.status(400).json({ message: 'Insufficient balance' });
       }
 
+      // Store original balances for transaction log
+      const lenderBalanceBefore = lender.balance;
+      const borrowerBalanceBefore = borrower.balance;
+
       // Perform the transfer
       lender.balance -= transferAmount;
       borrower.balance += transferAmount;
@@ -119,6 +124,27 @@ const lenderController = {
       // Save both users
       await lender.save();
       await borrower.save();
+
+      // Log the transaction
+      await Transaction.create({
+        type: 'lend_money',
+        from: {
+          userId: lender._id,
+          walletId: lender.walletId,
+          name: lender.name,
+          balanceBefore: lenderBalanceBefore,
+          balanceAfter: lender.balance
+        },
+        to: {
+          userId: borrower._id,
+          walletId: borrower.walletId,
+          name: borrower.name,
+          balanceBefore: borrowerBalanceBefore,
+          balanceAfter: borrower.balance
+        },
+        amount: transferAmount,
+        description: `Lender ${lender.name} lent ₹${transferAmount} to borrower ${borrower.name}`
+      });
 
       res.json({
         success: true,
@@ -176,6 +202,10 @@ const lenderController = {
         return res.status(400).json({ message: 'Insufficient balance in admin pool wallet' });
       }
 
+      // Store original balances for transaction log
+      const adminBalanceBefore = admin.balance;
+      const lenderBalanceBefore = lender.balance;
+
       // Perform the transfer from admin to lender
       admin.balance -= loadAmount;
       lender.balance += loadAmount;
@@ -183,6 +213,27 @@ const lenderController = {
       // Save both users
       await admin.save();
       await lender.save();
+
+      // Log the transaction
+      await Transaction.create({
+        type: 'wallet_load',
+        from: {
+          userId: admin._id,
+          walletId: admin.walletId,
+          name: admin.name,
+          balanceBefore: adminBalanceBefore,
+          balanceAfter: admin.balance
+        },
+        to: {
+          userId: lender._id,
+          walletId: lender.walletId,
+          name: lender.name,
+          balanceBefore: lenderBalanceBefore,
+          balanceAfter: lender.balance
+        },
+        amount: loadAmount,
+        description: `Lender ${lender.name} loaded ₹${loadAmount} from admin pool`
+      });
 
       res.json({
         success: true,
@@ -203,6 +254,55 @@ const lenderController = {
       });
     } catch (error) {
       console.error('Error loading wallet:', error);
+      res.status(500).json({ message: 'Server error' });
+    }
+  },
+
+  // Get transaction history for lender
+  getTransactions: async (req, res) => {
+    try {
+      if (req.user.role !== 'lender') {
+        return res.status(403).json({ message: 'Access denied' });
+      }
+
+      const lenderId = req.user._id;
+      const { page = 1, limit = 50, type } = req.query;
+      
+      // Build query to find transactions where user is either sender or receiver
+      const query = {
+        $or: [
+          { 'from.userId': lenderId },
+          { 'to.userId': lenderId }
+        ]
+      };
+
+      // Filter by type if specified
+      if (type) {
+        query.type = type;
+      }
+
+      const transactions = await Transaction.find(query)
+        .sort({ createdAt: -1 })
+        .limit(limit * 1)
+        .skip((page - 1) * limit)
+        .populate('from.userId', 'name email role')
+        .populate('to.userId', 'name email role');
+
+      const total = await Transaction.countDocuments(query);
+
+      res.json({
+        success: true,
+        data: {
+          transactions,
+          pagination: {
+            current: page,
+            pages: Math.ceil(total / limit),
+            total
+          }
+        }
+      });
+    } catch (error) {
+      console.error('Error fetching transactions:', error);
       res.status(500).json({ message: 'Server error' });
     }
   }

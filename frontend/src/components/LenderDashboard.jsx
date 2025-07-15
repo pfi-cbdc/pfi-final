@@ -5,8 +5,11 @@ import './LenderDashboard.css';
 
 const LenderDashboard = () => {
   const { user, updateUser } = useAuth();
+  const [activeTab, setActiveTab] = useState('borrowers');
   const [borrowers, setBorrowers] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [transactions, setTransactions] = useState([]);
+  const [transactionLoading, setTransactionLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [filterRisk, setFilterRisk] = useState('all');
@@ -25,8 +28,12 @@ const LenderDashboard = () => {
   const [loadMessage, setLoadMessage] = useState('');
 
   useEffect(() => {
-    fetchBorrowers();
-  }, []);
+    if (activeTab === 'borrowers') {
+      fetchBorrowers();
+    } else if (activeTab === 'transactions') {
+      fetchTransactions();
+    }
+  }, [activeTab]);
 
   const fetchBorrowers = async () => {
     try {
@@ -37,6 +44,18 @@ const LenderDashboard = () => {
       console.error('Error fetching borrowers:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchTransactions = async () => {
+    try {
+      setTransactionLoading(true);
+      const response = await lenderAPI.getTransactions();
+      setTransactions(response.data.data.transactions);
+    } catch (error) {
+      console.error('Error fetching transactions:', error);
+    } finally {
+      setTransactionLoading(false);
     }
   };
 
@@ -283,6 +302,22 @@ const LenderDashboard = () => {
           </div>
         </div>
 
+        <div className="lender-nav">
+          <button 
+            className={activeTab === 'borrowers' ? 'active' : ''}
+            onClick={() => setActiveTab('borrowers')}
+          >
+            Borrowers
+          </button>
+          <button 
+            className={activeTab === 'transactions' ? 'active' : ''}
+            onClick={() => setActiveTab('transactions')}
+          >
+            Transaction History
+          </button>
+        </div>
+
+        {activeTab === 'borrowers' && (
         <div className="borrowers-section">
           <div className="borrowers-header">
             <h3>Available Borrowers ({filteredBorrowers.length})</h3>
@@ -388,6 +423,79 @@ const LenderDashboard = () => {
             </table>
           )}
         </div>
+        )}
+
+        {activeTab === 'transactions' && (
+        <div className="transactions-section">
+          <div className="transactions-header">
+            <h3>Transaction History</h3>
+          </div>
+
+          {transactionLoading ? (
+            <div className="loading-spinner">Loading transactions...</div>
+          ) : transactions.length === 0 ? (
+            <div className="empty-state">
+              <div className="empty-icon">📊</div>
+              <div className="empty-message">No transactions found</div>
+              <div className="empty-subtitle">Your transaction history will appear here</div>
+            </div>
+          ) : (
+            <table className="transactions-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Type</th>
+                  <th>Description</th>
+                  <th>From</th>
+                  <th>To</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {transactions.map(transaction => (
+                  <tr key={transaction._id}>
+                    <td>
+                      {new Date(transaction.createdAt).toLocaleDateString()} <br/>
+                      <span className="time">{new Date(transaction.createdAt).toLocaleTimeString()}</span>
+                    </td>
+                    <td>
+                      <span className={`transaction-type ${transaction.type}`}>
+                        {transaction.type === 'wallet_load' ? 'Wallet Load' : 
+                         transaction.type === 'lend_money' ? 'Lend Money' : 
+                         'Admin Transfer'}
+                      </span>
+                    </td>
+                    <td className="description">{transaction.description}</td>
+                    <td>
+                      <div className="user-info">
+                        <div className="name">{transaction.from.name}</div>
+                        <div className="wallet-id">{transaction.from.walletId}</div>
+                      </div>
+                    </td>
+                    <td>
+                      <div className="user-info">
+                        <div className="name">{transaction.to.name}</div>
+                        <div className="wallet-id">{transaction.to.walletId}</div>
+                      </div>
+                    </td>
+                    <td>
+                      <span className={`amount ${transaction.from.userId === user._id ? 'debit' : 'credit'}`}>
+                        {transaction.from.userId === user._id ? '-' : '+'}₹{transaction.amount.toFixed(2)}
+                      </span>
+                    </td>
+                    <td>
+                      <span className={`status ${transaction.status}`}>
+                        {transaction.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+        )}
 
         {/* Lend Money Modal */}
         {lendModal.show && (

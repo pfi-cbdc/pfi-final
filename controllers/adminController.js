@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const Transaction = require('../models/Transaction');
 
 const adminController = {
   // Get all lenders
@@ -182,6 +183,10 @@ const adminController = {
         return res.status(400).json({ message: 'Insufficient balance' });
       }
 
+      // Store original balances for transaction log
+      const fromBalanceBefore = fromUser.balance;
+      const toBalanceBefore = toUser.balance;
+
       // Perform the transfer
       fromUser.balance -= transferAmount;
       toUser.balance += transferAmount;
@@ -189,6 +194,27 @@ const adminController = {
       // Save both users
       await fromUser.save();
       await toUser.save();
+
+      // Log the transaction
+      await Transaction.create({
+        type: 'admin_transfer',
+        from: {
+          userId: fromUser._id,
+          walletId: fromUser.walletId,
+          name: fromUser.name,
+          balanceBefore: fromBalanceBefore,
+          balanceAfter: fromUser.balance
+        },
+        to: {
+          userId: toUser._id,
+          walletId: toUser.walletId,
+          name: toUser.name,
+          balanceBefore: toBalanceBefore,
+          balanceAfter: toUser.balance
+        },
+        amount: transferAmount,
+        description: `Admin transfer: ₹${transferAmount} from ${fromUser.name} to ${toUser.name}`
+      });
 
       res.json({
         success: true,

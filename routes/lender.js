@@ -31,4 +31,7 @@ router.post('/load-wallet', [
   body('amount').isNumeric().isFloat({ gt: 0 })
 ], lenderController.loadWallet);
 
+// Get transaction history
+router.get('/transactions', authMiddleware, lenderController.getTransactions);
+
 module.exports = router;
