@@ -18,4 +18,11 @@ router.put('/profile', [
 // Get borrowers for lender
 router.get('/borrowers', authMiddleware, lenderController.getBorrowers);
 
+// Transfer money from lender to borrower
+router.post('/transfer', [
+  authMiddleware,
+  body('to').isString().trim().notEmpty(),
+  body('amount').isNumeric().isFloat({ gt: 0 })
+], lenderController.transferMoney);
+
 module.exports = router;

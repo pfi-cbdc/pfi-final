@@ -48,4 +48,18 @@ export const adminAPI = {
     api.post('/admin/transfer', { from, to, amount })
 };
 
+export const lenderAPI = {
+  getProfile: () => 
+    api.get('/lender/profile'),
+  
+  updateProfile: (data) => 
+    api.put('/lender/profile', data),
+  
+  getBorrowers: () => 
+    api.get('/lender/borrowers'),
+  
+  transferMoney: (to, amount) => 
+    api.post('/lender/transfer', { to, amount })
+};
+
 export default api;

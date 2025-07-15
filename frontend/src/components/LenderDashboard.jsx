@@ -1,14 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { lenderAPI, authAPI } from '../services/api';
 import './LenderDashboard.css';
 
 const LenderDashboard = () => {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const [borrowers, setBorrowers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [filterRisk, setFilterRisk] = useState('all');
+  const [lendModal, setLendModal] = useState({ show: false, borrower: null });
+  const [lendAmount, setLendAmount] = useState('');
+  const [lendLoading, setLendLoading] = useState(false);
+  const [lendMessage, setLendMessage] = useState('');
 
   useEffect(() => {
     fetchBorrowers();
@@ -17,15 +22,8 @@ const LenderDashboard = () => {
   const fetchBorrowers = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/lender/borrowers', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setBorrowers(data.data);
-      }
+      const response = await lenderAPI.getBorrowers();
+      setBorrowers(response.data.data);
     } catch (error) {
       console.error('Error fetching borrowers:', error);
     } finally {
@@ -58,6 +56,51 @@ const LenderDashboard = () => {
       style: 'currency',
       currency: 'INR'
     }).format(amount || 0);
+  };
+
+  const handleLendMoney = (borrower) => {
+    setLendModal({ show: true, borrower });
+    setLendAmount('');
+    setLendMessage('');
+  };
+
+  const closeLendModal = () => {
+    setLendModal({ show: false, borrower: null });
+    setLendAmount('');
+    setLendMessage('');
+  };
+
+  const submitLendMoney = async (e) => {
+    e.preventDefault();
+    setLendLoading(true);
+    setLendMessage('');
+
+    try {
+      const response = await lenderAPI.transferMoney(
+        lendModal.borrower.walletId,
+        parseFloat(lendAmount)
+      );
+
+      if (response.data.success) {
+        setLendMessage(`Successfully lent ₹${lendAmount} to ${lendModal.borrower.name}`);
+        
+        // Update user balance in context
+        const updatedUser = {
+          ...user,
+          balance: response.data.data.from.newBalance
+        };
+        updateUser(updatedUser);
+        
+        fetchBorrowers(); // Refresh borrowers list
+        setTimeout(() => {
+          closeLendModal();
+        }, 2000);
+      }
+    } catch (error) {
+      setLendMessage(error.response?.data?.message || 'Transfer failed');
+    } finally {
+      setLendLoading(false);
+    }
   };
 
   return (
@@ -94,6 +137,7 @@ const LenderDashboard = () => {
                   <th>Monthly Income</th>
                   <th>Balance</th>
                   <th>Interest Rate</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -139,13 +183,86 @@ const LenderDashboard = () => {
                     <td>
                       {borrower.borrowerProfile?.rateOfInterest || 'N/A'}%
                     </td>
-                    
+                    <td>
+                      <button 
+                        className="lend-btn"
+                        onClick={() => handleLendMoney(borrower)}
+                        disabled={!borrower.walletId}
+                      >
+                        Lend Money
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           )}
         </div>
+
+        {/* Lend Money Modal */}
+        {lendModal.show && (
+          <div className="modal-overlay">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h3>Lend Money to {lendModal.borrower?.name}</h3>
+                <button className="close-btn" onClick={closeLendModal}>×</button>
+              </div>
+              
+              <div className="modal-body">
+                <div className="borrower-info">
+                  <p><strong>Email:</strong> {lendModal.borrower?.email}</p>
+                  <p><strong>Wallet ID:</strong> {lendModal.borrower?.walletId}</p>
+                  <p><strong>Current Balance:</strong> {formatCurrency(lendModal.borrower?.balance)}</p>
+                  <p><strong>Interest Rate:</strong> {lendModal.borrower?.borrowerProfile?.rateOfInterest || 'N/A'}%</p>
+                </div>
+                
+                <form onSubmit={submitLendMoney}>
+                  <div className="form-group">
+                    <label htmlFor="lendAmount">Amount to Lend (₹):</label>
+                    <input
+                      type="number"
+                      id="lendAmount"
+                      value={lendAmount}
+                      onChange={(e) => setLendAmount(e.target.value)}
+                      placeholder="Enter amount"
+                      min="0.01"
+                      step="0.01"
+                      required
+                    />
+                  </div>
+                  
+                  <div className="lender-info">
+                    <p><strong>Your Wallet ID:</strong> {user?.walletId || 'Not Set'}</p>
+                    <p><strong>Your Balance:</strong> {formatCurrency(user?.balance)}</p>
+                  </div>
+                  
+                  <div className="modal-actions">
+                    <button 
+                      type="submit" 
+                      className="lend-submit-btn"
+                      disabled={lendLoading}
+                    >
+                      {lendLoading ? 'Processing...' : 'Lend Money'}
+                    </button>
+                    <button 
+                      type="button" 
+                      className="cancel-btn"
+                      onClick={closeLendModal}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+                
+                {lendMessage && (
+                  <div className={`lend-message ${lendMessage.includes('Successfully') ? 'success' : 'error'}`}>
+                    {lendMessage}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
       </div>
     </div>
