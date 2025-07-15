@@ -16,6 +16,8 @@ const AdminDashboard = () => {
   });
   const [transferLoading, setTransferLoading] = useState(false);
   const [transferMessage, setTransferMessage] = useState('');
+  const [deleteModal, setDeleteModal] = useState({ show: false, user: null });
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const fetchStats = async () => {
     try {
@@ -124,6 +126,37 @@ const AdminDashboard = () => {
     }));
   };
 
+  const handleDeleteUser = (user) => {
+    setDeleteModal({ show: true, user });
+  };
+
+  const closeDeleteModal = () => {
+    setDeleteModal({ show: false, user: null });
+  };
+
+  const confirmDeleteUser = async () => {
+    setDeleteLoading(true);
+    try {
+      await adminAPI.deleteUser(deleteModal.user._id);
+      
+      // Refresh data based on active tab
+      if (activeTab === 'dashboard') {
+        fetchStats();
+      } else if (activeTab === 'lenders') {
+        fetchLenders();
+      } else if (activeTab === 'borrowers') {
+        fetchBorrowers();
+      }
+      
+      closeDeleteModal();
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      alert(error.response?.data?.message || 'Failed to delete user');
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
   const renderDashboard = () => (
     <div className="admin-dashboard">
       <h2>Dashboard Statistics</h2>
@@ -168,6 +201,7 @@ const AdminDashboard = () => {
                 <th>Wallet ID</th>
                 <th>Balance</th>
                 <th>Joined</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -179,6 +213,14 @@ const AdminDashboard = () => {
                   <td>{lender.walletId || 'N/A'}</td>
                   <td>₹{lender.balance?.toFixed(2) || '0.00'}</td>
                   <td>{new Date(lender.createdAt).toLocaleDateString()}</td>
+                  <td>
+                    <button 
+                      className="delete-btn"
+                      onClick={() => handleDeleteUser(lender)}
+                    >
+                      Delete
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -210,6 +252,7 @@ const AdminDashboard = () => {
                 <th>Monthly Income</th>
                 <th>Balance</th>
                 <th>Joined</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -224,6 +267,14 @@ const AdminDashboard = () => {
                   <td>{borrower.borrowerProfile?.monthlyIncome || 'N/A'}</td>
                   <td>₹{borrower.balance?.toFixed(2) || '0.00'}</td>
                   <td>{new Date(borrower.createdAt).toLocaleDateString()}</td>
+                  <td>
+                    <button 
+                      className="delete-btn"
+                      onClick={() => handleDeleteUser(borrower)}
+                    >
+                      Delete
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -375,6 +426,47 @@ const AdminDashboard = () => {
         {activeTab === 'borrowers' && renderBorrowers()}
         {activeTab === 'transfer' && renderTransfer()}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {deleteModal.show && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h3>Confirm Delete</h3>
+              <button className="close-btn" onClick={closeDeleteModal}>×</button>
+            </div>
+            
+            <div className="modal-body">
+              <div className="delete-warning">
+                <p>Are you sure you want to delete this user?</p>
+                <div className="user-details">
+                  <p><strong>Name:</strong> {deleteModal.user?.name}</p>
+                  <p><strong>Email:</strong> {deleteModal.user?.email}</p>
+                  <p><strong>Role:</strong> {deleteModal.user?.role}</p>
+                  <p><strong>Balance:</strong> ₹{deleteModal.user?.balance?.toFixed(2) || '0.00'}</p>
+                </div>
+                <p className="warning-text">⚠️ This action cannot be undone!</p>
+              </div>
+              
+              <div className="modal-actions">
+                <button 
+                  className="confirm-delete-btn"
+                  onClick={confirmDeleteUser}
+                  disabled={deleteLoading}
+                >
+                  {deleteLoading ? 'Deleting...' : 'Yes, Delete'}
+                </button>
+                <button 
+                  className="cancel-btn"
+                  onClick={closeDeleteModal}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -45,7 +45,10 @@ export const adminAPI = {
     api.get('/admin/borrowers'),
   
   transferMoney: (from, to, amount) => 
-    api.post('/admin/transfer', { from, to, amount })
+    api.post('/admin/transfer', { from, to, amount }),
+  
+  deleteUser: (userId) => 
+    api.delete(`/admin/users/${userId}`)
 };
 
 export const lenderAPI = {
