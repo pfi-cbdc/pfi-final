@@ -58,6 +58,25 @@ const lenderController = {
       console.error('Lender profile update error:', error);
       res.status(500).json({ message: 'Server error' });
     }
+  },
+
+  getBorrowers: async (req, res) => {
+    try {
+      if (req.user.role !== 'lender') {
+        return res.status(403).json({ message: 'Access denied' });
+      }
+
+      const borrowers = await User.find({ role: 'borrower' })
+        .select('-password')
+        .sort({ createdAt: -1 });
+
+      res.json({
+        data: borrowers
+      });
+    } catch (error) {
+      console.error('Get borrowers error:', error);
+      res.status(500).json({ message: 'Server error' });
+    }
   }
 };
 

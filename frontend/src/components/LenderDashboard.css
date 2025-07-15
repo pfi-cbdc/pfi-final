@@ -1,0 +1,438 @@
+/* LenderDashboard.css */
+
+.lender-dashboard {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+}
+
+.lender-container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.lender-header {
+  background: white;
+  border-radius: 12px;
+  padding: 30px;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.lender-header h1 {
+  color: #2c3e50;
+  font-size: 2.5rem;
+  margin: 0 0 10px 0;
+  font-weight: 700;
+}
+
+.lender-header p {
+  color: #7f8c8d;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.lender-wallet-info {
+  background: white;
+  border-radius: 12px;
+  padding: 25px;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.lender-wallet-info h3 {
+  color: #2c3e50;
+  font-size: 1.5rem;
+  margin: 0 0 20px 0;
+  font-weight: 600;
+}
+
+.wallet-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.wallet-info-item {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 15px;
+  border-left: 4px solid #667eea;
+}
+
+.wallet-info-label {
+  font-size: 0.9rem;
+  color: #6c757d;
+  font-weight: 500;
+  margin-bottom: 5px;
+}
+
+.wallet-info-value {
+  font-size: 1.2rem;
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+.lender-stats {
+  background: white;
+  border-radius: 12px;
+  padding: 25px;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.lender-stats h3 {
+  color: #2c3e50;
+  font-size: 1.5rem;
+  margin: 0 0 20px 0;
+  font-weight: 600;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.stat-item {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.stat-number {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 5px;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.borrowers-section {
+  background: white;
+  border-radius: 12px;
+  padding: 25px;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.borrowers-header {
+  display: flex;
+  justify-content: between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.borrowers-header h3 {
+  color: #2c3e50;
+  font-size: 1.5rem;
+  margin: 0;
+  font-weight: 600;
+}
+
+.borrowers-filters {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.filter-input {
+  padding: 8px 12px;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  min-width: 150px;
+}
+
+.filter-select {
+  padding: 8px 12px;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  min-width: 130px;
+  background: white;
+}
+
+.borrowers-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.borrowers-table th {
+  background: #f8f9fa;
+  padding: 15px 12px;
+  text-align: left;
+  font-weight: 600;
+  color: #495057;
+  border-bottom: 2px solid #dee2e6;
+  font-size: 0.9rem;
+}
+
+.borrowers-table td {
+  padding: 15px 12px;
+  border-bottom: 1px solid #dee2e6;
+  color: #495057;
+  font-size: 0.9rem;
+}
+
+.borrowers-table tr:hover {
+  background: #f8f9fa;
+}
+
+.borrower-name {
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.borrower-email {
+  color: #6c757d;
+  font-size: 0.85rem;
+}
+
+.wallet-id {
+  font-family: monospace;
+  background: #e9ecef;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+}
+
+.credit-score {
+  font-weight: 600;
+}
+
+.credit-score.excellent {
+  color: #28a745;
+}
+
+.credit-score.good {
+  color: #17a2b8;
+}
+
+.credit-score.fair {
+  color: #ffc107;
+}
+
+.credit-score.poor {
+  color: #dc3545;
+}
+
+.balance-amount {
+  font-weight: 600;
+  color: #28a745;
+}
+
+.borrower-type {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.borrower-type.prime {
+  background: #d4edda;
+  color: #155724;
+}
+
+.borrower-type.subprime {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.borrower-type.near-prime {
+  background: #d1ecf1;
+  color: #0c5460;
+}
+
+.risk-category {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.risk-category.low {
+  background: #d4edda;
+  color: #155724;
+}
+
+.risk-category.medium {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.risk-category.high {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.action-btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.action-btn.primary {
+  background: #667eea;
+  color: white;
+}
+
+.action-btn.primary:hover {
+  background: #5a6fd8;
+}
+
+.action-btn.secondary {
+  background: #6c757d;
+  color: white;
+}
+
+.action-btn.secondary:hover {
+  background: #5a6268;
+}
+
+.loading-spinner {
+  text-align: center;
+  padding: 40px;
+  color: #6c757d;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: #6c757d;
+}
+
+.empty-icon {
+  font-size: 3rem;
+  margin-bottom: 15px;
+}
+
+.empty-message {
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+}
+
+.empty-subtitle {
+  font-size: 0.9rem;
+  opacity: 0.7;
+}
+
+.quick-actions {
+  background: white;
+  border-radius: 12px;
+  padding: 25px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.quick-actions h3 {
+  color: #2c3e50;
+  font-size: 1.5rem;
+  margin: 0 0 20px 0;
+  font-weight: 600;
+}
+
+.quick-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+}
+
+.quick-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.quick-action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.quick-action-icon {
+  font-size: 1.2rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .lender-dashboard {
+    padding: 10px;
+  }
+  
+  .lender-header {
+    padding: 20px;
+  }
+  
+  .lender-header h1 {
+    font-size: 2rem;
+  }
+  
+  .wallet-info-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .borrowers-filters {
+    flex-direction: column;
+  }
+  
+  .filter-input,
+  .filter-select {
+    width: 100%;
+  }
+  
+  .borrowers-table {
+    font-size: 0.8rem;
+  }
+  
+  .borrowers-table th,
+  .borrowers-table td {
+    padding: 10px 8px;
+  }
+  
+  .quick-actions-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .borrowers-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}

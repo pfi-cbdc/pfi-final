@@ -15,4 +15,7 @@ router.put('/profile', [
   body('walletId').optional().isString().trim()
 ], lenderController.updateProfile);
 
+// Get borrowers for lender
+router.get('/borrowers', authMiddleware, lenderController.getBorrowers);
+
 module.exports = router;
