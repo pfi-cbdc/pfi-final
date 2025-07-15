@@ -31,4 +31,21 @@ export const authAPI = {
     api.put('/auth/role', { role })
 };
 
+export const adminAPI = {
+  getDashboardStats: () => 
+    api.get('/admin/dashboard'),
+  
+  getAllUsers: () => 
+    api.get('/admin/users'),
+  
+  getLenders: () => 
+    api.get('/admin/lenders'),
+  
+  getBorrowers: () => 
+    api.get('/admin/borrowers'),
+  
+  transferMoney: (from, to, amount) => 
+    api.post('/admin/transfer', { from, to, amount })
+};
+
 export default api;

@@ -157,6 +157,60 @@ const adminController = {
       console.error('Error fetching dashboard stats:', error);
       res.status(500).json({ message: 'Server error' });
     }
+  },
+
+  // Transfer money between wallets
+  transferMoney: async (req, res) => {
+    try {
+      const { from, to, amount } = req.body;
+      const transferAmount = parseFloat(amount);
+
+      // Find source and destination users by walletId
+      const fromUser = await User.findOne({ walletId: from });
+      const toUser = await User.findOne({ walletId: to });
+
+      if (!fromUser) {
+        return res.status(404).json({ message: 'Source wallet not found' });
+      }
+
+      if (!toUser) {
+        return res.status(404).json({ message: 'Destination wallet not found' });
+      }
+
+      // Check if source wallet has sufficient balance
+      if (fromUser.balance < transferAmount) {
+        return res.status(400).json({ message: 'Insufficient balance' });
+      }
+
+      // Perform the transfer
+      fromUser.balance -= transferAmount;
+      toUser.balance += transferAmount;
+
+      // Save both users
+      await fromUser.save();
+      await toUser.save();
+
+      res.json({
+        success: true,
+        message: 'Transfer completed successfully',
+        data: {
+          from: {
+            walletId: fromUser.walletId,
+            name: fromUser.name,
+            newBalance: fromUser.balance
+          },
+          to: {
+            walletId: toUser.walletId,
+            name: toUser.name,
+            newBalance: toUser.balance
+          },
+          amount: transferAmount
+        }
+      });
+    } catch (error) {
+      console.error('Error transferring money:', error);
+      res.status(500).json({ message: 'Server error' });
+    }
   }
 };
 

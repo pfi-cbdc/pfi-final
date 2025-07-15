@@ -26,4 +26,12 @@ router.get('/lenders', adminAuth, adminController.getLenders);
 // Borrower management routes
 router.get('/borrowers', adminAuth, adminController.getBorrowers);
 
+// Transfer money between wallets
+router.post('/transfer', [
+  adminAuth,
+  body('from').isString().trim().notEmpty(),
+  body('to').isString().trim().notEmpty(),
+  body('amount').isNumeric().isFloat({ gt: 0 })
+], adminController.transferMoney);
+
 module.exports = router;
