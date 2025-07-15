@@ -68,79 +68,9 @@ const LenderDashboard = () => {
           <p>Welcome back, {user?.name}! Manage your lending portfolio and explore new opportunities.</p>
         </div>
 
-        <div className="lender-wallet-info">
-          <h3>Your Wallet Information</h3>
-          <div className="wallet-info-grid">
-            <div className="wallet-info-item">
-              <div className="wallet-info-label">Wallet ID</div>
-              <div className="wallet-info-value">{user?.walletId || 'Not Set'}</div>
-            </div>
-            <div className="wallet-info-item">
-              <div className="wallet-info-label">Available Balance</div>
-              <div className="wallet-info-value">{formatCurrency(user?.balance)}</div>
-            </div>
-            <div className="wallet-info-item">
-              <div className="wallet-info-label">Email</div>
-              <div className="wallet-info-value">{user?.email}</div>
-            </div>
-          </div>
-        </div>
-
-        <div className="lender-stats">
-          <h3>Your Portfolio</h3>
-          <div className="stats-grid">
-            <div className="stat-item">
-              <div className="stat-number">₹0</div>
-              <div className="stat-label">Total Lent</div>
-            </div>
-            <div className="stat-item">
-              <div className="stat-number">0</div>
-              <div className="stat-label">Active Loans</div>
-            </div>
-            <div className="stat-item">
-              <div className="stat-number">₹0</div>
-              <div className="stat-label">Interest Earned</div>
-            </div>
-            <div className="stat-item">
-              <div className="stat-number">0%</div>
-              <div className="stat-label">Default Rate</div>
-            </div>
-          </div>
-        </div>
-
         <div className="borrowers-section">
           <div className="borrowers-header">
             <h3>Available Borrowers ({filteredBorrowers.length})</h3>
-          </div>
-
-          <div className="borrowers-filters">
-            <input
-              type="text"
-              placeholder="Search borrowers..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="filter-input"
-            />
-            <select
-              value={filterType}
-              onChange={(e) => setFilterType(e.target.value)}
-              className="filter-select"
-            >
-              <option value="all">All Types</option>
-              <option value="prime">Prime</option>
-              <option value="near-prime">Near Prime</option>
-              <option value="subprime">Subprime</option>
-            </select>
-            <select
-              value={filterRisk}
-              onChange={(e) => setFilterRisk(e.target.value)}
-              className="filter-select"
-            >
-              <option value="all">All Risk Levels</option>
-              <option value="low">Low Risk</option>
-              <option value="medium">Medium Risk</option>
-              <option value="high">High Risk</option>
-            </select>
           </div>
 
           {loading ? (
@@ -164,7 +94,6 @@ const LenderDashboard = () => {
                   <th>Monthly Income</th>
                   <th>Balance</th>
                   <th>Interest Rate</th>
-                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -210,16 +139,7 @@ const LenderDashboard = () => {
                     <td>
                       {borrower.borrowerProfile?.rateOfInterest || 'N/A'}%
                     </td>
-                    <td>
-                      <div className="action-buttons">
-                        <button className="action-btn primary">
-                          View Details
-                        </button>
-                        <button className="action-btn secondary">
-                          Send Offer
-                        </button>
-                      </div>
-                    </td>
+                    
                   </tr>
                 ))}
               </tbody>
@@ -227,23 +147,6 @@ const LenderDashboard = () => {
           )}
         </div>
 
-        <div className="quick-actions">
-          <h3>Quick Actions</h3>
-          <div className="quick-actions-grid">
-            <button className="quick-action-btn">
-              <span className="quick-action-icon">📊</span>
-              View Analytics
-            </button>
-            <button className="quick-action-btn">
-              <span className="quick-action-icon">⚙️</span>
-              Lending Preferences
-            </button>
-            <button className="quick-action-btn">
-              <span className="quick-action-icon">📈</span>
-              Portfolio Summary
-            </button>
-          </div>
-        </div>
       </div>
     </div>
   );
