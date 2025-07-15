@@ -25,4 +25,10 @@ router.post('/transfer', [
   body('amount').isNumeric().isFloat({ gt: 0 })
 ], lenderController.transferMoney);
 
+// Load wallet from admin pool
+router.post('/load-wallet', [
+  authMiddleware,
+  body('amount').isNumeric().isFloat({ gt: 0 })
+], lenderController.loadWallet);
+
 module.exports = router;

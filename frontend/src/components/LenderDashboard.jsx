@@ -19,6 +19,10 @@ const LenderDashboard = () => {
   const [bulkLendAmounts, setBulkLendAmounts] = useState({});
   const [bulkLendLoading, setBulkLendLoading] = useState(false);
   const [bulkLendMessage, setBulkLendMessage] = useState('');
+  const [loadWalletModal, setLoadWalletModal] = useState(false);
+  const [loadAmount, setLoadAmount] = useState('');
+  const [loadLoading, setLoadLoading] = useState(false);
+  const [loadMessage, setLoadMessage] = useState('');
 
   useEffect(() => {
     fetchBorrowers();
@@ -219,12 +223,64 @@ const LenderDashboard = () => {
     }
   };
 
+  const openLoadWalletModal = () => {
+    setLoadWalletModal(true);
+    setLoadAmount('');
+    setLoadMessage('');
+  };
+
+  const closeLoadWalletModal = () => {
+    setLoadWalletModal(false);
+    setLoadAmount('');
+    setLoadMessage('');
+  };
+
+  const submitLoadWallet = async (e) => {
+    e.preventDefault();
+    setLoadLoading(true);
+    setLoadMessage('');
+
+    try {
+      const response = await lenderAPI.loadWallet(parseFloat(loadAmount));
+
+      if (response.data.success) {
+        setLoadMessage(`Successfully loaded ₹${loadAmount} to your wallet!`);
+        
+        // Update user balance in context
+        const updatedUser = {
+          ...user,
+          balance: response.data.data.lender.newBalance
+        };
+        updateUser(updatedUser);
+        
+        setTimeout(() => {
+          closeLoadWalletModal();
+        }, 2000);
+      }
+    } catch (error) {
+      setLoadMessage(error.response?.data?.message || 'Failed to load wallet');
+    } finally {
+      setLoadLoading(false);
+    }
+  };
+
   return (
     <div className="lender-dashboard">
       <div className="lender-container">
         <div className="lender-header">
           <h1>Lender Dashboard</h1>
           <p>Welcome back, {user?.name}! Manage your lending portfolio and explore new opportunities.</p>
+          <div className="wallet-info">
+            <div className="wallet-balance">
+              <span>Your Balance: {formatCurrency(user?.balance)}</span>
+              <button 
+                className="load-wallet-btn"
+                onClick={openLoadWalletModal}
+              >
+                Load Wallet
+              </button>
+            </div>
+          </div>
         </div>
 
         <div className="borrowers-section">
@@ -466,6 +522,65 @@ const LenderDashboard = () => {
                 {bulkLendMessage && (
                   <div className={`bulk-message ${bulkLendMessage.includes('Successfully') ? 'success' : 'error'}`}>
                     {bulkLendMessage}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Load Wallet Modal */}
+        {loadWalletModal && (
+          <div className="modal-overlay">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h3>Load Wallet</h3>
+                <button className="close-btn" onClick={closeLoadWalletModal}>×</button>
+              </div>
+              
+              <div className="modal-body">
+                <div className="wallet-load-info">
+                  <p><strong>Current Balance:</strong> {formatCurrency(user?.balance)}</p>
+                  <p><strong>Source:</strong> Admin Pool Wallet</p>
+                  <p className="info-text">💡 Money will be transferred from the admin pool to your wallet</p>
+                </div>
+                
+                <form onSubmit={submitLoadWallet}>
+                  <div className="form-group">
+                    <label htmlFor="loadAmount">Amount to Load (₹):</label>
+                    <input
+                      type="number"
+                      id="loadAmount"
+                      value={loadAmount}
+                      onChange={(e) => setLoadAmount(e.target.value)}
+                      placeholder="Enter amount to load"
+                      min="0.01"
+                      step="0.01"
+                      required
+                    />
+                  </div>
+                  
+                  <div className="modal-actions">
+                    <button 
+                      type="submit" 
+                      className="load-submit-btn"
+                      disabled={loadLoading}
+                    >
+                      {loadLoading ? 'Loading...' : 'Load Wallet'}
+                    </button>
+                    <button 
+                      type="button" 
+                      className="cancel-btn"
+                      onClick={closeLoadWalletModal}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+                
+                {loadMessage && (
+                  <div className={`load-message ${loadMessage.includes('Successfully') ? 'success' : 'error'}`}>
+                    {loadMessage}
                   </div>
                 )}
               </div>

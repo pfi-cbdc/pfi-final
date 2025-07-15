@@ -62,7 +62,10 @@ export const lenderAPI = {
     api.get('/lender/borrowers'),
   
   transferMoney: (to, amount) => 
-    api.post('/lender/transfer', { to, amount })
+    api.post('/lender/transfer', { to, amount }),
+  
+  loadWallet: (amount) => 
+    api.post('/lender/load-wallet', { amount })
 };
 
 export default api;

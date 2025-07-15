@@ -141,6 +141,70 @@ const lenderController = {
       console.error('Error transferring money:', error);
       res.status(500).json({ message: 'Server error' });
     }
+  },
+
+  // Load wallet from admin pool
+  loadWallet: async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
+
+      if (req.user.role !== 'lender') {
+        return res.status(403).json({ message: 'Access denied' });
+      }
+
+      const { amount } = req.body;
+      const loadAmount = parseFloat(amount);
+      const lenderId = req.user._id;
+
+      // Get lender
+      const lender = await User.findById(lenderId);
+      if (!lender) {
+        return res.status(404).json({ message: 'Lender not found' });
+      }
+
+      // Find admin user (pool wallet)
+      const admin = await User.findOne({ role: 'admin' });
+      if (!admin) {
+        return res.status(404).json({ message: 'Admin pool wallet not found' });
+      }
+
+      // Check if admin has sufficient balance
+      if (admin.balance < loadAmount) {
+        return res.status(400).json({ message: 'Insufficient balance in admin pool wallet' });
+      }
+
+      // Perform the transfer from admin to lender
+      admin.balance -= loadAmount;
+      lender.balance += loadAmount;
+
+      // Save both users
+      await admin.save();
+      await lender.save();
+
+      res.json({
+        success: true,
+        message: 'Wallet loaded successfully',
+        data: {
+          lender: {
+            walletId: lender.walletId,
+            name: lender.name,
+            newBalance: lender.balance
+          },
+          admin: {
+            walletId: admin.walletId,
+            name: admin.name,
+            newBalance: admin.balance
+          },
+          amount: loadAmount
+        }
+      });
+    } catch (error) {
+      console.error('Error loading wallet:', error);
+      res.status(500).json({ message: 'Server error' });
+    }
   }
 };
 
