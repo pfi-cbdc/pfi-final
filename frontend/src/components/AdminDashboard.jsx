@@ -198,6 +198,26 @@ const AdminDashboard = () => {
         </div>
       </div>
 
+      <div className="admin-wallet-info">
+        <div className="wallet-card">
+          <h3>Pool Wallet Information</h3>
+          <div className="wallet-details">
+            <div className="wallet-item">
+              <span className="wallet-label">Wallet ID:</span>
+              <span className="wallet-value">{user?.walletId || 'Not Set'}</span>
+            </div>
+            <div className="wallet-item">
+              <span className="wallet-label">Balance:</span>
+              <span className="wallet-value">₹{user?.balance?.toFixed(2) || '0.00'}</span>
+            </div>
+            <div className="wallet-item">
+              <span className="wallet-label">Email:</span>
+              <span className="wallet-value">{user?.email}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="admin-nav">
         <button 
           className={activeTab === 'dashboard' ? 'active' : ''}

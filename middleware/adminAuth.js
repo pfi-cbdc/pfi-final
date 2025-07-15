@@ -22,7 +22,7 @@ const adminAuth = async (req, res, next) => {
     }
 
     // Additional check for specific admin email
-    if (user.email !== 'admin@gmail.com') {
+    if (user.email !== '9999888800@xyz.com') {
       return res.status(403).json({ message: 'Access denied. Invalid admin account.' });
     }
 

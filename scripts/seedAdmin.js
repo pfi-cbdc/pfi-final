@@ -9,24 +9,28 @@ const seedAdmin = async () => {
     console.log('Connected to MongoDB');
 
     // Check if admin already exists
-    const existingAdmin = await User.findOne({ email: 'admin@gmail.com' });
+    const existingAdmin = await User.findOne({ email: '9999888800@xyz.com' });
     
     if (existingAdmin) {
       console.log('Admin user already exists');
       
-      // Update to ensure it has admin role
+      // Update to ensure it has admin role and wallet details
       await User.findByIdAndUpdate(existingAdmin._id, { 
         role: 'admin',
-        name: 'Admin User'
+        name: 'Admin User',
+        walletId: 'POOL_WALLET_001',
+        balance: 1000000
       });
       console.log('Admin user updated');
     } else {
       // Create admin user
       const adminUser = new User({
         name: 'Admin User',
-        email: 'admin@gmail.com',
+        email: '9999888800@xyz.com',
         password: 'admin123',
-        role: 'admin'
+        role: 'admin',
+        walletId: 'POOL_WALLET_001',
+        balance: 1000000
       });
 
       await adminUser.save();
@@ -34,8 +38,10 @@ const seedAdmin = async () => {
     }
 
     console.log('Admin credentials:');
-    console.log('Email: admin@gmail.com');
+    console.log('Email: 9999888800@xyz.com');
     console.log('Password: admin123');
+    console.log('Wallet ID: POOL_WALLET_001');
+    console.log('Balance: Rs. 1,000,000');
     
     process.exit(0);
   } catch (error) {

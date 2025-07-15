@@ -448,6 +448,74 @@ button:hover {
   background: #5a6268;
 }
 
+/* Admin Wallet Info Styles */
+.admin-wallet-info {
+  margin: 20px 0;
+}
+
+.wallet-card {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  border: 1px solid #e1e5e9;
+}
+
+.wallet-card h3 {
+  margin: 0 0 15px 0;
+  color: #333;
+  font-size: 18px;
+}
+
+.wallet-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.wallet-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #dee2e6;
+}
+
+.wallet-label {
+  font-weight: 600;
+  color: #495057;
+  font-size: 14px;
+}
+
+.wallet-value {
+  font-weight: 500;
+  color: #007bff;
+  font-size: 14px;
+  word-break: break-all;
+}
+
+.wallet-item .wallet-value {
+  text-align: right;
+}
+
+@media (max-width: 768px) {
+  .wallet-details {
+    grid-template-columns: 1fr;
+  }
+  
+  .wallet-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
+  
+  .wallet-item .wallet-value {
+    text-align: left;
+  }
+}
+
 /* Auth Modal Styles */
 .auth-modal-overlay {
   position: fixed;
