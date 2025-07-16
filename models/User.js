@@ -76,6 +76,11 @@ const userSchema = new mongoose.Schema({
     loanAmount: {
       type: String,
       enum: ['Upto 25000', '25000-50000', '50000-100000']
+    },
+    description: {
+      type: String,
+      trim: true,
+      maxlength: 500
     }
   }
 }, {

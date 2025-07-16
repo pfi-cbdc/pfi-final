@@ -21,7 +21,8 @@ router.put('/profile', [
   body('riskCategory').optional().isIn(['Low', 'Medium', 'High']),
   body('borrowerType').optional().isIn(['Salaried', 'SelfEmployed']),
   body('monthlyIncome').optional().isIn(['Upto 25000', '25000-50000', '50000-100000', '100000-500000']),
-  body('loanAmount').optional().isIn(['Upto 25000', '25000-50000', '50000-100000'])
+  body('loanAmount').optional().isIn(['Upto 25000', '25000-50000', '50000-100000']),
+  body('description').optional().isString().trim().isLength({ max: 500 })
 ], borrowerController.updateProfile);
 
 module.exports = router;
