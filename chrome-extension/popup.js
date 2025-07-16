@@ -154,6 +154,7 @@ function displayBorrowers(borrowers) {
                 <div class="borrower-details">
                     <div><strong>Wallet:</strong> ${borrower.walletId || 'Not Set'}</div>
                     <div><strong>Phone:</strong> ${borrower.phoneNumber || 'Not Set'}</div>
+                    <div><strong>Balance:</strong> ₹${borrower.balance || 0}</div>
                     <div><strong>Credit Score:</strong> ${borrower.borrowerProfile?.creditScore || 'N/A'}</div>
                     <div><strong>App Score:</strong> ${borrower.borrowerProfile?.appScore || 'N/A'}</div>
                     <div><strong>Loan Amount:</strong> ₹${borrower.borrowerProfile?.loanAmount || 'Not specified'}</div>

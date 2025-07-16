@@ -68,7 +68,7 @@ const lenderController = {
       }
 
       const borrowers = await User.find({ role: 'borrower' })
-        .select('-password -email -balance -_id')
+        .select('-password -email -_id')
         .sort({ createdAt: -1 });
 
       res.json({
